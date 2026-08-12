@@ -588,6 +588,19 @@ class PubChemSELFIES(PubChem):
     READER: Type[dr.SelfiesReader] = dr.SelfiesReader
 
 
+class PubChemBPE(PubChem):
+    """
+    Subset of PubChem using ChemBPEReader for data reading.
+
+    Inherits from PubChem.
+
+    Attributes:
+        READER (type): Data reader type for chemical data (ChemBPEReader).
+    """
+
+    READER: Type[dr.ChemBPEReader] = dr.ChemBPEReader
+
+
 if __name__ == "__main__":
     dataset = PubChem(n_samples=10_000)
     dataset.prepare_data()
