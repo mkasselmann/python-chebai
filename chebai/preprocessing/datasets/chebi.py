@@ -631,6 +631,19 @@ class ChEBIOverXSELFIES(ChEBIOverX):
     READER: dr.SelfiesReader = dr.SelfiesReader
 
 
+class ChEBIOverXBPE(ChEBIOverX):
+    """
+    A class for extracting data from the ChEBI dataset with the pretrained BPE reader.
+
+    Inherits from ChEBIOverX.
+
+    Attributes:
+        READER (ChemBPEReader): The reader used for reading the dataset (BPE, bundled BPE_SWJ tokenizer).
+    """
+
+    READER: dr.ChemBPEReader = dr.ChemBPEReader
+
+
 class ChEBIOver100(ChEBIOverX):
     """
     A class for extracting data from the ChEBI dataset with a threshold of 100 for selecting classes.
@@ -691,6 +704,26 @@ class ChEBIOver100SELFIES(ChEBIOverXSELFIES, ChEBIOver100):
 
 
 class ChEBIOver50SELFIES(ChEBIOverXSELFIES, ChEBIOver50):
+    pass
+
+
+class ChEBIOver100BPE(ChEBIOverXBPE, ChEBIOver100):
+    """
+    A class for extracting data from the ChEBI dataset with the BPE reader and a threshold of 100.
+
+    Inherits from ChEBIOverXBPE and ChEBIOver100.
+    """
+
+    pass
+
+
+class ChEBIOver50BPE(ChEBIOverXBPE, ChEBIOver50):
+    """
+    A class for extracting data from the ChEBI dataset with the BPE reader and a threshold of 50.
+
+    Inherits from ChEBIOverXBPE and ChEBIOver50.
+    """
+
     pass
 
 

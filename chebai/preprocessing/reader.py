@@ -367,7 +367,9 @@ class ChemBPEReader(DataReader):
     Data reader for chemical data using BPE tokenization.
 
     Args:
-        data_path: Path for the pretrained BPE tokenizer.
+        data_path: Path to a directory holding a pretrained (HuggingFace-style) BPE tokenizer,
+            i.e. a "vocab.json"/"merges.txt" pair (optionally with "tokenizer_config.json" etc.).
+            Defaults to the bundled tokenizer under "bin/BPE_SWJ".
         max_len: Maximum length of the tokenized sequence.
         vsize: Vocabulary size for the tokenizer (not used).
         collator_kwargs: Optional dictionary of keyword arguments for the collator.
@@ -390,16 +392,29 @@ class ChemBPEReader(DataReader):
         vsize: int = 4000,
         **kwargs,
     ):
-        from transformers import RobertaTokenizerFast
+        # built directly on the `tokenizers` library (rather than
+        # transformers.RobertaTokenizerFast.from_pretrained), since loading a bare
+        # vocab.json/merges.txt pair via the transformers `from_pretrained` API is
+        # broken on current transformers versions (>=5).
+        from tokenizers.implementations import ByteLevelBPETokenizer
+        from tokenizers.processors import RobertaProcessing
 
         super().__init__(*args, **kwargs)
-        self.tokenizer = RobertaTokenizerFast.from_pretrained(
-            data_path, max_len=max_len
+        if data_path is None:
+            data_path = os.path.join(self.dirname, "bin", "BPE_SWJ")
+        self.tokenizer = ByteLevelBPETokenizer(
+            os.path.join(data_path, "vocab.json"),
+            os.path.join(data_path, "merges.txt"),
         )
+        self.tokenizer.post_processor = RobertaProcessing(
+            ("</s>", self.tokenizer.token_to_id("</s>")),
+            ("<s>", self.tokenizer.token_to_id("<s>")),
+        )
+        self.tokenizer.enable_truncation(max_length=max_len)
 
     def _get_raw_data(self, row: Dict[str, Any]) -> List[int]:
         """Tokenize raw data using BPE tokenizer."""
-        return self.tokenizer(row["features"])["input_ids"]
+        return self.tokenizer.encode(row["features"]).ids
 
 
 class SelfiesReader(ChemDataReader):
