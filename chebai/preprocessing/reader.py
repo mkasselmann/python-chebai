@@ -392,7 +392,6 @@ class ChemBPEReader(DataReader):
         vsize: int = 4000,
         **kwargs,
     ):
-
         from tokenizers.implementations import ByteLevelBPETokenizer
         from tokenizers.processors import RobertaProcessing
 
