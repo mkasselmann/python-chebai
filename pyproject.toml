@@ -62,6 +62,7 @@ include = ["chebai*"]
 "chebai" = [
     "preprocessing/bin/**/*.txt",
     "preprocessing/bin/**/*.json",
+    "preprocessing/bin/**/*.pkl",
     "configs/**/*.yml",
     "configs/**/*.yaml",
 ]

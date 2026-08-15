@@ -1,6 +1,7 @@
 from __future__ import annotations
+import json
 import re
-from typing import List
+from typing import Dict, List
 
 from rdkit import Chem
 
@@ -291,6 +292,99 @@ class BasicSmilesTokenizer(object):
                 i += 1
 
         return "".join(result)
+
+
+class SPETokenizer:
+    """
+    SMILES Pair Encoding (SPE) tokenizer.
+
+    Splits a SMILES string into atom-level tokens (reusing ``SMI_REGEX_PATTERN``), then
+    iteratively merges adjacent token pairs according to a ranked codes file (as produced
+    by e.g. https://github.com/XinhaoLi74/SmilesPE), always applying the highest-ranked
+    (i.e. most frequent) applicable merge first.
+
+    References
+    ----------
+    .. [1] Li, X., Fourches, D. SMILES Pair Encoding: A Data-Driven Substructure
+        Tokenization Algorithm for Deep Learning. J. Chem. Inf. Model. 2021.
+    """
+
+    def __init__(self, codes_path: str):
+        self.regex = re.compile(SMI_REGEX_PATTERN)
+        with open(codes_path, "r", encoding="utf-8") as f:
+            pairs = [tuple(line.split()) for line in f if line.strip()]
+        self.merge_ranks = {pair: rank for rank, pair in enumerate(pairs)}
+
+    @staticmethod
+    def _get_pairs(tokens: List[str]) -> set:
+        return {(tokens[i], tokens[i + 1]) for i in range(len(tokens) - 1)}
+
+    def tokenize(self, smiles: str) -> List[str]:
+        """Tokenize a SMILES string into SPE tokens by iteratively applying ranked merges."""
+        tokens = self.regex.findall(smiles)
+        pairs = self._get_pairs(tokens)
+        while pairs:
+            best_pair = min(pairs, key=lambda p: self.merge_ranks.get(p, float("inf")))
+            if best_pair not in self.merge_ranks:
+                break
+            first, second = best_pair
+            merged, i = [], 0
+            while i < len(tokens):
+                if (
+                    i < len(tokens) - 1
+                    and tokens[i] == first
+                    and tokens[i + 1] == second
+                ):
+                    merged.append(first + second)
+                    i += 2
+                else:
+                    merged.append(tokens[i])
+                    i += 1
+            tokens = merged
+            pairs = self._get_pairs(tokens)
+        return tokens
+
+
+class APETokenizer:
+    """
+    Greedy longest-match SMILES tokenizer using a pretrained Atom Pair Encoding (APE)
+    vocabulary, from the SMILES-Tokenization project
+    (https://github.com/BlastCoder/SMILES-Tokenization).
+
+    Unlike `SPETokenizer`, encoding does not re-apply merge rules; scan left to right and greedily take the
+    longest literal substring of the input that is present in the vocabulary,
+    falling back to a single unknown-character token otherwise.
+    """
+
+    def __init__(self, vocab_path: str, unk_token: str = "<unk>"):
+        with open(vocab_path, "r", encoding="utf-8") as f:
+            self.vocabulary: Dict[str, int] = json.load(f)
+        self.unk_token = unk_token
+        self.unk_token_id = self.vocabulary[unk_token]
+
+    def tokenize(self, text: str) -> List[str]:
+        """Greedily split text into the longest matching vocabulary substrings."""
+        tokens = []
+        i, n = 0, len(text)
+        while i < n:
+            match = None
+            for j in range(n, i, -1):
+                if text[i:j] in self.vocabulary:
+                    match = text[i:j]
+                    break
+            if match is not None:
+                tokens.append(match)
+                i += len(match)
+            else:
+                tokens.append(self.unk_token)
+                i += 1
+        return tokens
+
+    def encode(self, text: str) -> List[int]:
+        """Tokenize and map to vocabulary indices (unknown substrings -> unk id)."""
+        return [
+            self.vocabulary.get(tok, self.unk_token_id) for tok in self.tokenize(text)
+        ]
 
 
 # ---- quick self-test ------------------------------------------------------
