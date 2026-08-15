@@ -601,6 +601,45 @@ class PubChemBPE(PubChem):
     READER: Type[dr.ChemBPEReader] = dr.ChemBPEReader
 
 
+class PubChemSPE(PubChem):
+    """
+    Subset of PubChem using ChemSPEReader for data reading.
+
+    Inherits from PubChem.
+
+    Attributes:
+        READER (type): Data reader type for chemical data (ChemSPEReader).
+    """
+
+    READER: Type[dr.ChemSPEReader] = dr.ChemSPEReader
+
+
+class PubChemAPE(PubChem):
+    """
+    Subset of PubChem using ChemAPEReader for data reading.
+
+    Inherits from PubChem.
+
+    Attributes:
+        READER (type): Data reader type for chemical data (ChemAPEReader).
+    """
+
+    READER: Type[dr.ChemAPEReader] = dr.ChemAPEReader
+
+
+class PubChemTrie(PubChem):
+    """
+    Subset of PubChem using TrieReader for data reading.
+
+    Inherits from PubChem.
+
+    Attributes:
+        READER (type): Data reader type for chemical data (TrieReader).
+    """
+
+    READER: Type[dr.TrieReader] = dr.TrieReader
+
+
 if __name__ == "__main__":
     dataset = PubChem(n_samples=10_000)
     dataset.prepare_data()

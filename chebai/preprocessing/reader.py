@@ -392,10 +392,6 @@ class ChemBPEReader(DataReader):
         vsize: int = 4000,
         **kwargs,
     ):
-        # built directly on the `tokenizers` library (rather than
-        # transformers.RobertaTokenizerFast.from_pretrained), since loading a bare
-        # vocab.json/merges.txt pair via the transformers `from_pretrained` API is
-        # broken on current transformers versions (>=5).
         from tokenizers.implementations import ByteLevelBPETokenizer
         from tokenizers.processors import RobertaProcessing
 
@@ -415,6 +411,252 @@ class ChemBPEReader(DataReader):
     def _get_raw_data(self, row: Dict[str, Any]) -> List[int]:
         """Tokenize raw data using BPE tokenizer."""
         return self.tokenizer.encode(row["features"]).ids
+
+
+class ChemSPEReader(TokenIndexerReader):
+    """
+    Data reader for chemical data using SMILES Pair Encoding (SPE) tokenization.
+
+    Applies a pretrained SPE codes file (ranked atom-pair merge rules, e.g. produced by
+    https://github.com/XinhaoLi74/SmilesPE) to tokenize SMILES strings. Unlike
+    `ChemBPEReader`, the vocabulary (token -> index mapping) is not fixed; new tokens
+    encountered at runtime are added to the cache, like `ChemDataReader`.
+
+    Args:
+        codes_path: Path to the SPE codes file (ranked merge rules). Defaults to the
+            bundled "bin/spe_pubchem100K/spe_pubchem100K.txt".
+        canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
+        collator_kwargs: Optional dictionary of keyword arguments for the collator.
+        token_path: Optional path for the token file.
+        kwargs: Additional keyword arguments.
+    """
+
+    COLLATOR = RaggedCollator
+
+    def __init__(
+        self,
+        *args,
+        codes_path: Optional[str] = None,
+        canonicalize_smiles: bool = True,
+        **kwargs,
+    ) -> None:
+        from chebai.preprocessing.smiles_tokenizer import SPETokenizer
+
+        super().__init__(*args, **kwargs)
+        if codes_path is None:
+            codes_path = os.path.join(
+                self.dirname, "bin", "spe_pubchem100K", "spe_pubchem100K.txt"
+            )
+        self.tokenizer = SPETokenizer(codes_path)
+        self.canonicalize_smiles = canonicalize_smiles
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_spe"
+
+    def _read_data(self, raw_data: str | Chem.Mol) -> Optional[List[int]]:
+        """Tokenize a SMILES string (or Chem.Mol) into a list of SPE token indices."""
+        try:
+            if isinstance(raw_data, str):
+                mol = Chem.MolFromSmiles(raw_data.strip())
+            else:
+                mol = raw_data
+            if mol is None:
+                raise ValueError(f"Invalid input: {raw_data}")
+        except ValueError as e:
+            print(f"Could not process {raw_data}")
+            print(f"\tError: {e}")
+            return None
+
+        if self.canonicalize_smiles:
+            try:
+                smiles = Chem.MolToSmiles(mol, canonical=True)
+            except Exception as e:
+                print(f"RDKit failed to canonicalize the SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+        elif isinstance(raw_data, str):
+            smiles = raw_data
+        else:
+            try:
+                smiles = Chem.MolToSmiles(mol)
+            except Exception as e:
+                print(f"RDKit failed to convert Mol object to SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+
+        try:
+            tokenized = [
+                self._get_token_index(tok) for tok in self.tokenizer.tokenize(smiles)
+            ]
+        except Exception as e:
+            print(f"Could not tokenize SMILES: {smiles}")
+            print(f"\tError: {e}")
+            return None
+        return tokenized
+
+
+class ChemAPEReader(DataReader):
+    """
+    Data reader for chemical data using a pretrained Atom Pair Encoding (APE) tokenizer,
+    from the SMILES-Tokenization project (https://github.com/BlastCoder/SMILES-Tokenization).
+
+    Uses a fixed pretrained vocabulary with greedy longest-match tokenization; unlike `ChemSPEReader`/`TrieReader`,
+    unmatched substrings are mapped to a fixed unknown-token id rather than being added
+    to the vocabulary.
+
+    Args:
+        data_path: Path to a directory holding a pretrained APE tokenizer, i.e. a
+            "vocab.json" file. Defaults to the bundled tokenizer under "bin/ape_pubchem100K".
+        canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
+        collator_kwargs: Optional dictionary of keyword arguments for the collator.
+        token_path: Optional path for the token file.
+        kwargs: Additional keyword arguments.
+    """
+
+    COLLATOR = RaggedCollator
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_ape"
+
+    def __init__(
+        self,
+        *args,
+        data_path: Optional[str] = None,
+        canonicalize_smiles: bool = True,
+        **kwargs,
+    ):
+        from chebai.preprocessing.smiles_tokenizer import APETokenizer
+
+        super().__init__(*args, **kwargs)
+        if data_path is None:
+            data_path = os.path.join(self.dirname, "bin", "ape_pubchem100K")
+        self.tokenizer = APETokenizer(os.path.join(data_path, "vocab.json"))
+        self.canonicalize_smiles = canonicalize_smiles
+
+    def _read_data(self, raw_data: str | Chem.Mol) -> Optional[List[int]]:
+        """Tokenize a SMILES string (or Chem.Mol) using the pretrained APE vocabulary."""
+        try:
+            if isinstance(raw_data, str):
+                mol = Chem.MolFromSmiles(raw_data.strip())
+            else:
+                mol = raw_data
+            if mol is None:
+                raise ValueError(f"Invalid input: {raw_data}")
+        except ValueError as e:
+            print(f"Could not process {raw_data}")
+            print(f"\tError: {e}")
+            return None
+
+        if self.canonicalize_smiles:
+            try:
+                smiles = Chem.MolToSmiles(mol, canonical=True)
+            except Exception as e:
+                print(f"RDKit failed to canonicalize the SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+        elif isinstance(raw_data, str):
+            smiles = raw_data
+        else:
+            try:
+                smiles = Chem.MolToSmiles(mol)
+            except Exception as e:
+                print(f"RDKit failed to convert Mol object to SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+
+        try:
+            return self.tokenizer.encode(smiles)
+        except Exception as e:
+            print(f"Could not tokenize SMILES: {smiles}")
+            print(f"\tError: {e}")
+            return None
+
+
+class TrieReader(TokenIndexerReader):
+    """
+    Data reader for chemical data using a pretrained replacement-trie tokenizer,
+    from the SMILES-Tokenization project (https://github.com/BlastCoder/SMILES-Tokenization).
+
+    Like `ChemSPEReader`, the vocabulary is not fixed: new (replacement or raw) tokens
+    encountered at runtime are added to the cache.
+
+    Args:
+        trie_path: Path to the pickled trie `_State`. Defaults to the bundled
+            "bin/trie_pubchem100K/trie_pubchem100K.pkl".
+        canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
+        collator_kwargs: Optional dictionary of keyword arguments for the collator.
+        token_path: Optional path for the token file.
+        kwargs: Additional keyword arguments.
+    """
+
+    COLLATOR = RaggedCollator
+
+    def __init__(
+        self,
+        *args,
+        trie_path: Optional[str] = None,
+        canonicalize_smiles: bool = True,
+        **kwargs,
+    ) -> None:
+        from chebai.preprocessing.trie_tokenizer import TrieTokenizer
+
+        super().__init__(*args, **kwargs)
+        if trie_path is None:
+            trie_path = os.path.join(
+                self.dirname, "bin", "trie_pubchem100K", "trie_pubchem100K.pkl"
+            )
+        self.tokenizer = TrieTokenizer(trie_path)
+        self.canonicalize_smiles = canonicalize_smiles
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_trie"
+
+    def _read_data(self, raw_data: str | Chem.Mol) -> Optional[List[int]]:
+        """Tokenize a SMILES string (or Chem.Mol) into a list of trie token indices."""
+        try:
+            if isinstance(raw_data, str):
+                mol = Chem.MolFromSmiles(raw_data.strip())
+            else:
+                mol = raw_data
+            if mol is None:
+                raise ValueError(f"Invalid input: {raw_data}")
+        except ValueError as e:
+            print(f"Could not process {raw_data}")
+            print(f"\tError: {e}")
+            return None
+
+        if self.canonicalize_smiles:
+            try:
+                smiles = Chem.MolToSmiles(mol, canonical=True)
+            except Exception as e:
+                print(f"RDKit failed to canonicalize the SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+        elif isinstance(raw_data, str):
+            smiles = raw_data
+        else:
+            try:
+                smiles = Chem.MolToSmiles(mol)
+            except Exception as e:
+                print(f"RDKit failed to convert Mol object to SMILES: {raw_data}")
+                print(f"\t{e}")
+                return None
+
+        try:
+            tokenized = [
+                self._get_token_index(tok) for tok in self.tokenizer.tokenize(smiles)
+            ]
+        except Exception as e:
+            print(f"Could not tokenize SMILES: {smiles}")
+            print(f"\tError: {e}")
+            return None
+        return tokenized
 
 
 class SelfiesReader(ChemDataReader):
