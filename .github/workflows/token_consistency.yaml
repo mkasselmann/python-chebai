@@ -18,6 +18,7 @@ on:
       - "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
       - "chebai/preprocessing/bin/smiles_spe/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
   pull_request:
     paths:
       - "chebai/preprocessing/bin/smiles_token/tokens.txt"
@@ -28,6 +29,7 @@ on:
       - "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
       - "chebai/preprocessing/bin/smiles_spe/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
 
 jobs:
   check_tokens:
@@ -63,6 +65,7 @@ jobs:
             "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
             "chebai/preprocessing/bin/smiles_spe/tokens.txt"
             "chebai/preprocessing/bin/smiles_trie/tokens.txt"
+            "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
           )
           echo "TOKENS_FILES=${TOKENS_FILES[*]}" >> $GITHUB_ENV
 

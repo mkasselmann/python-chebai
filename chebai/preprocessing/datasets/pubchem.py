@@ -640,6 +640,19 @@ class PubChemTrie(PubChem):
     READER: Type[dr.TrieReader] = dr.TrieReader
 
 
+class PubChemTrieTTG(PubChem):
+    """
+    Subset of PubChem using TrieTTGReader for data reading.
+
+    Inherits from PubChem.
+
+    Attributes:
+        READER (type): Data reader type for chemical data (TrieTTGReader).
+    """
+
+    READER: Type[dr.TrieTTGReader] = dr.TrieTTGReader
+
+
 if __name__ == "__main__":
     dataset = PubChem(n_samples=10_000)
     dataset.prepare_data()

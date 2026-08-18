@@ -594,6 +594,8 @@ class TrieReader(TokenIndexerReader):
     """
 
     COLLATOR = RaggedCollator
+    DEFAULT_TRIE_SUBDIR = "trie_pubchem100K"
+    DEFAULT_TRIE_FILENAME = "trie_pubchem100K.pkl"
 
     def __init__(
         self,
@@ -607,7 +609,10 @@ class TrieReader(TokenIndexerReader):
         super().__init__(*args, **kwargs)
         if trie_path is None:
             trie_path = os.path.join(
-                self.dirname, "bin", "trie_pubchem100K", "trie_pubchem100K.pkl"
+                self.dirname,
+                "bin",
+                self.DEFAULT_TRIE_SUBDIR,
+                self.DEFAULT_TRIE_FILENAME,
             )
         self.tokenizer = TrieTokenizer(trie_path)
         self.canonicalize_smiles = canonicalize_smiles
@@ -657,6 +662,34 @@ class TrieReader(TokenIndexerReader):
             print(f"\tError: {e}")
             return None
         return tokenized
+
+
+class TrieTTGReader(TrieReader):
+    """
+    Data reader using the TTG (Token Transition Graph) refined replacement trie
+    from the SMILES-Tokenization project (https://github.com/BlastCoder/SMILES-Tokenization).
+
+    Structurally identical to `TrieReader` (same pickled `_State`/`ReplaceTrie` layout),
+    but the trie was built with entropy-based filtering (Algorithm 8): patterns are only
+    kept if their average token-transition entropy stays below a threshold, which changes
+    which n-grams get merged. Uses its own token cache, separate from `TrieReader`.
+
+    Args:
+        trie_path: Path to the pickled trie `_State`. Defaults to the bundled
+            "bin/ttg_pubchem100K/ttg_pubchem100K_K8_F3_H3p5.pkl".
+        canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
+        collator_kwargs: Optional dictionary of keyword arguments for the collator.
+        token_path: Optional path for the token file.
+        kwargs: Additional keyword arguments.
+    """
+
+    DEFAULT_TRIE_SUBDIR = "ttg_pubchem100K"
+    DEFAULT_TRIE_FILENAME = "ttg_pubchem100K_K8_F3_H3p5.pkl"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_ttg"
 
 
 class SelfiesReader(ChemDataReader):
