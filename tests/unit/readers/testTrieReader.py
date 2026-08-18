@@ -7,7 +7,12 @@ from typing import List
 from unittest.mock import mock_open, patch
 
 from chebai.preprocessing import trie_tokenizer
-from chebai.preprocessing.reader import EMBEDDING_OFFSET, TrieReader, TrieTTGReader
+from chebai.preprocessing.reader import (
+    EMBEDDING_OFFSET,
+    TrieReader,
+    TrieTTGChEMBLReader,
+    TrieTTGReader,
+)
 from chebai.preprocessing.trie_tokenizer import (
     ReplaceTrie,
     _State,
@@ -145,6 +150,53 @@ class TestTrieTTGReader(unittest.TestCase):
         """TrieTTGReader must use its own token cache name, not collide with TrieReader."""
         self.assertEqual(TrieTTGReader.name(), "smiles_ttg")
         self.assertNotEqual(TrieTTGReader.name(), TrieReader.name())
+
+    def test_read_data_adds_new_tokens(self) -> None:
+        """New (replaced or raw) tokens are assigned increasing indices and cached."""
+        result: List[int] = self.reader._read_data("CC")
+        self.assertEqual(result, [EMBEDDING_OFFSET + 0])
+        self.assertIn("<R0>", self.reader.cache)
+
+    def test_read_data_invalid_smiles_returns_none(self) -> None:
+        """Invalid SMILES strings must not raise and instead return None."""
+        self.assertIsNone(self.reader._read_data("not_a_smiles("))
+
+
+class TestTrieTTGChEMBLReader(unittest.TestCase):
+    """
+    Unit tests for the TrieTTGChEMBLReader class (same pickle layout, distinct token cache).
+
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Build a tiny pretrained trie (pickled as if from "trie_funcs") and load it."""
+        root = ReplaceTrie()
+        _insert_replace(root, ("C", "C"), "<R0>")
+        state = _State(token_to_idx={}, idx_to_token={}, replace_root=root)
+
+        trie_fd, cls.trie_path = tempfile.mkstemp(suffix=".pkl")
+        with os.fdopen(trie_fd, "wb") as f:
+            f.write(_pickle_as_trie_funcs(state))
+
+        with patch(
+            "chebai.preprocessing.reader.open",
+            new_callable=mock_open,
+            read_data="",
+        ):
+            cls.reader = TrieTTGChEMBLReader(
+                token_path="/mock/path", trie_path=cls.trie_path
+            )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        os.remove(cls.trie_path)
+
+    def test_name_is_distinct_from_other_trie_readers(self) -> None:
+        """TrieTTGChEMBLReader must use its own token cache name."""
+        self.assertEqual(TrieTTGChEMBLReader.name(), "smiles_ttg_chembl")
+        self.assertNotEqual(TrieTTGChEMBLReader.name(), TrieReader.name())
+        self.assertNotEqual(TrieTTGChEMBLReader.name(), TrieTTGReader.name())
 
     def test_read_data_adds_new_tokens(self) -> None:
         """New (replaced or raw) tokens are assigned increasing indices and cached."""

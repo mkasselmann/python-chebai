@@ -696,6 +696,19 @@ class ChEBIOverXTrieTTG(ChEBIOverX):
     READER: dr.TrieTTGReader = dr.TrieTTGReader
 
 
+class ChEBIOverXTrieTTGChEMBL(ChEBIOverX):
+    """
+    A class for extracting data from the ChEBI dataset with the pretrained TTG-refined Trie reader trained on ChEMBL.
+
+    Inherits from ChEBIOverX.
+
+    Attributes:
+        READER (TrieTTGChEMBLReader): The reader used for reading the dataset (Trie+TTG, bundled ttg_chembl).
+    """
+
+    READER: dr.TrieTTGChEMBLReader = dr.TrieTTGChEMBLReader
+
+
 class ChEBIOver100(ChEBIOverX):
     """
     A class for extracting data from the ChEBI dataset with a threshold of 100 for selecting classes.
@@ -854,6 +867,26 @@ class ChEBIOver50TrieTTG(ChEBIOverXTrieTTG, ChEBIOver50):
     A class for extracting data from the ChEBI dataset with the Trie+TTG reader and a threshold of 50.
 
     Inherits from ChEBIOverXTrieTTG and ChEBIOver50.
+    """
+
+    pass
+
+
+class ChEBIOver100TrieTTGChEMBL(ChEBIOverXTrieTTGChEMBL, ChEBIOver100):
+    """
+    A class for extracting data from the ChEBI dataset with the ChEMBL-trained Trie+TTG reader and a threshold of 100.
+
+    Inherits from ChEBIOverXTrieTTGChEMBL and ChEBIOver100.
+    """
+
+    pass
+
+
+class ChEBIOver50TrieTTGChEMBL(ChEBIOverXTrieTTGChEMBL, ChEBIOver50):
+    """
+    A class for extracting data from the ChEBI dataset with the ChEMBL-trained Trie+TTG reader and a threshold of 50.
+
+    Inherits from ChEBIOverXTrieTTGChEMBL and ChEBIOver50.
     """
 
     pass
