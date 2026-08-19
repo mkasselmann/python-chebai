@@ -667,7 +667,7 @@ class ChEBIOverXSPEChEMBL(ChEBIOverX):
         READER (ChemSPEChEMBLReader): The reader used for reading the dataset (SPE, bundled spe_chembl codes).
     """
 
-    READER: dr.ChemSPEChEMBLReader = dr.ChemSPEChEMBLReader
+    READER: dr.SPEChEMBLReader = dr.SPEChEMBLReader
 
 
 class ChEBIOverXAPE(ChEBIOverX):
