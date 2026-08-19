@@ -497,6 +497,16 @@ class ChemSPEReader(TokenIndexerReader):
         return tokenized
 
 
+class SPEChEMBLReader(ChemSPEReader):
+    DEFAULT_TRIE_SUBDIR = "spe_chembl"
+    DEFAULT_TRIE_FILENAME = "spe_chembl.txt"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_spe_chembl"
+
+
 class ChemAPEReader(DataReader):
     """
     Data reader for chemical data using a pretrained Atom Pair Encoding (APE) tokenizer,
@@ -574,6 +584,13 @@ class ChemAPEReader(DataReader):
             print(f"Could not tokenize SMILES: {smiles}")
             print(f"\tError: {e}")
             return None
+
+
+class APEChEMBLReader(ChemAPEReader):
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_ape_chembl"
 
 
 class TrieReader(TokenIndexerReader):
@@ -662,6 +679,16 @@ class TrieReader(TokenIndexerReader):
             print(f"\tError: {e}")
             return None
         return tokenized
+
+
+class TrieChEMBLReader(TrieReader):
+    DEFAULT_TRIE_SUBDIR = "trie_chembl"
+    DEFAULT_TRIE_FILENAME = "trie_chembl.pkl"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_trie_chembl"
 
 
 class TrieTTGReader(TrieReader):

@@ -16,10 +16,14 @@ on:
       - "chebai/preprocessing/bin/graph_properties/tokens.txt"
       - "chebai/preprocessing/bin/graph/tokens.txt"
       - "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_ape/tokens.txt"
       - "chebai/preprocessing/bin/smiles_spe/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg_chembl/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_ape_chembl/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chembl/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
   pull_request:
     paths:
       - "chebai/preprocessing/bin/smiles_token/tokens.txt"
@@ -28,11 +32,14 @@ on:
       - "chebai/preprocessing/bin/graph_properties/tokens.txt"
       - "chebai/preprocessing/bin/graph/tokens.txt"
       - "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_ape/tokens.txt"
       - "chebai/preprocessing/bin/smiles_spe/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg_chembl/tokens.txt"
-
+      - "chebai/preprocessing/bin/smiles_ape_chembl/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chembl/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
 jobs:
   check_tokens:
     runs-on: ubuntu-latest
@@ -65,10 +72,14 @@ jobs:
             "chebai/preprocessing/bin/graph_properties/tokens.txt"
             "chebai/preprocessing/bin/graph/tokens.txt"
             "chebai/preprocessing/bin/deepsmiles_token/tokens.txt"
+            "chebai/preprocessing/bin/smiles_ape/tokens.txt"
             "chebai/preprocessing/bin/smiles_spe/tokens.txt"
             "chebai/preprocessing/bin/smiles_trie/tokens.txt"
             "chebai/preprocessing/bin/smiles_ttg/tokens.txt"
             "chebai/preprocessing/bin/smiles_ttg_chembl/tokens.txt"
+            "chebai/preprocessing/bin/smiles_ape_chembl/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chembl/tokens.txt"
+            "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
           )
           echo "TOKENS_FILES=${TOKENS_FILES[*]}" >> $GITHUB_ENV
 

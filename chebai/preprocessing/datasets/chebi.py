@@ -657,6 +657,19 @@ class ChEBIOverXSPE(ChEBIOverX):
     READER: dr.ChemSPEReader = dr.ChemSPEReader
 
 
+class ChEBIOverXSPEChEMBL(ChEBIOverX):
+    """
+    A class for extracting data from the ChEBI dataset with the pretrained SPE reader on ChEMBL.
+
+    Inherits from ChEBIOverX.
+
+    Attributes:
+        READER (ChemSPEChEMBLReader): The reader used for reading the dataset (SPE, bundled spe_chembl codes).
+    """
+
+    READER: dr.ChemSPEChEMBLReader = dr.ChemSPEChEMBLReader
+
+
 class ChEBIOverXAPE(ChEBIOverX):
     """
     A class for extracting data from the ChEBI dataset with the pretrained APE reader.
@@ -670,6 +683,19 @@ class ChEBIOverXAPE(ChEBIOverX):
     READER: dr.ChemAPEReader = dr.ChemAPEReader
 
 
+class ChEBIOverXAPEChEMBL(ChEBIOverX):
+    """
+    A class for extracting data from the ChEBI dataset with the pretrained APE reader on ChEMBL.
+
+    Inherits from ChEBIOverX.
+
+    Attributes:
+        READER (APEChEMBLReader): The reader used for reading the dataset (APE, bundled ape_chembl vocab).
+    """
+
+    READER: dr.APEChEMBLReader = dr.APEChEMBLReader
+
+
 class ChEBIOverXTrie(ChEBIOverX):
     """
     A class for extracting data from the ChEBI dataset with the pretrained Trie reader.
@@ -681,6 +707,19 @@ class ChEBIOverXTrie(ChEBIOverX):
     """
 
     READER: dr.TrieReader = dr.TrieReader
+
+
+class ChEBIOverXTrieChEMBL(ChEBIOverX):
+    """
+    A class for extracting data from the ChEBI dataset with the pretrained Trie reader trained on ChEMBL.
+
+    Inherits from ChEBIOverX.
+
+    Attributes:
+        READER (TrieChEMBLReader): The reader used for reading the dataset (Trie, bundled trie_chembl).
+    """
+
+    READER: dr.TrieChEMBLReader = dr.TrieChEMBLReader
 
 
 class ChEBIOverXTrieTTG(ChEBIOverX):
@@ -812,6 +851,16 @@ class ChEBIOver50SPE(ChEBIOverXSPE, ChEBIOver50):
     pass
 
 
+class ChEBIOver50SPEChEMBL(ChEBIOverXSPEChEMBL, ChEBIOver50):
+    """
+    A class for extracting data from the ChEBI dataset with the ChEMBL-trained SPE reader and a threshold of 50.
+
+    Inherits from ChEBIOverXSPEChEMBL and ChEBIOver50.
+    """
+
+    pass
+
+
 class ChEBIOver100APE(ChEBIOverXAPE, ChEBIOver100):
     """
     A class for extracting data from the ChEBI dataset with the APE reader and a threshold of 100.
@@ -832,6 +881,16 @@ class ChEBIOver50APE(ChEBIOverXAPE, ChEBIOver50):
     pass
 
 
+class ChEBIOver50APEChEMBL(ChEBIOverXAPEChEMBL, ChEBIOver50):
+    """
+    A class for extracting data from the ChEBI dataset with the ChEMBL-trained APE reader and a threshold of 50.
+
+    Inherits from ChEBIOverXAPEChEMBL and ChEBIOver50.
+    """
+
+    pass
+
+
 class ChEBIOver100Trie(ChEBIOverXTrie, ChEBIOver100):
     """
     A class for extracting data from the ChEBI dataset with the Trie reader and a threshold of 100.
@@ -847,6 +906,16 @@ class ChEBIOver50Trie(ChEBIOverXTrie, ChEBIOver50):
     A class for extracting data from the ChEBI dataset with the Trie reader and a threshold of 50.
 
     Inherits from ChEBIOverXTrie and ChEBIOver50.
+    """
+
+    pass
+
+
+class ChEBIOver50TrieChEMBL(ChEBIOverXTrieChEMBL, ChEBIOver50):
+    """
+    A class for extracting data from the ChEBI dataset with the ChEMBL-trained Trie+TTG reader and a threshold of 50.
+
+    Inherits from ChEBIOverXTrieChEMBL and ChEBIOver50.
     """
 
     pass
