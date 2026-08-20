@@ -72,6 +72,32 @@ def compress(tokens: List[str], rt_root: ReplaceTrie) -> List[str]:
     return out
 
 
+def build_reverse_map(rt_root: ReplaceTrie) -> Dict[str, List[str]]:
+    """Walk `rt_root` and map every replacement token (e.g. "<R0>") to the original
+    token sequence it was substituted for (inverse of `compress`)."""
+    reverse_map: Dict[str, List[str]] = {}
+    stack: List[tuple] = [(rt_root, [])]
+    while stack:
+        node, path = stack.pop()
+        if node.replacement is not None:
+            reverse_map[node.replacement] = path
+        for tok, child in node.children.items():
+            stack.append((child, path + [tok]))
+    return reverse_map
+
+
+def decompress(tokens: List[str], reverse_map: Dict[str, List[str]]) -> List[str]:
+    """Expand replacement tokens (e.g. "<R0>") back into their original token
+    sequence using `reverse_map`, recursively resolving nested replacements."""
+    out: List[str] = []
+    for tok in tokens:
+        if tok in reverse_map:
+            out.extend(decompress(reverse_map[tok], reverse_map))
+        else:
+            out.append(tok)
+    return out
+
+
 class _RestrictedTrieUnpickler(pickle.Unpickler):
     """
     Only reconstructs the exact classes needed for a trie `_State`; refuses everything
@@ -106,7 +132,15 @@ class TrieTokenizer:
         with open(trie_path, "rb") as f:
             state: _State = _RestrictedTrieUnpickler(f).load()
         self.replace_root = state.replace_root
+        self._reverse_map: Optional[Dict[str, List[str]]] = None
 
     def tokenize(self, smiles: str) -> List[str]:
         """Tokenize a SMILES string, replacing frequent token runs via the trie."""
         return compress(tokenize(smiles), self.replace_root)
+
+    def detokenize(self, tokens: List[str]) -> List[str]:
+        """Expand replacement tokens (e.g. "<R0>") back into the original atom-level
+        tokens they were substituted for (inverse of `tokenize`)."""
+        if self._reverse_map is None:
+            self._reverse_map = build_reverse_map(self.replace_root)
+        return decompress(tokens, self._reverse_map)
