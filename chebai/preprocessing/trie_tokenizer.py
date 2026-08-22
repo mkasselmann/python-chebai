@@ -16,13 +16,14 @@ just enough of the original `trie_funcs.py` (same regex, same node/trie layout) 
 from __future__ import annotations
 
 import collections
+import os
 import pickle
 import re
 from typing import Dict, List, Optional
 
-# Same pretokenization regex as trie_funcs.py, required to match the trie's training data.
+
 TOKEN_PATTERN = re.compile(
-    r"(\[[^\[\]]+\]|Br?|Cl?|[A-Z][a-z]?|\d+|=|\/|\\|\+|\-|\(|\)|@|\[|\])"
+    r"(\[[^\[\]]+\]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|%\d{2}|\d+|=|#|:|\/|\\|\+|\-|\(|\)|@@|@|\[|\])"
 )
 
 
@@ -119,24 +120,62 @@ class _RestrictedTrieUnpickler(pickle.Unpickler):
             )
 
 
+# Bundled pretrained trie, used when no `trie_path` is given.
+_DEFAULT_TRIE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "bin",
+    "trie_pubchem100K",
+    "trie_pubchem100K.pkl",
+)
+
+EMBEDDING_OFFSET = 10
+UNKNOWN_TOKEN = "<unk>"
+
+
 class TrieTokenizer:
     """
     Longest-match SMILES tokenizer using a pretrained replacement trie.
 
+
     Args:
         trie_path: Path to the pickled trie `_State` (as produced by
             `train_trie.py` from https://github.com/BlastCoder/SMILES-Tokenization).
+            Defaults to the bundled "bin/trie_pubchem100K/trie_pubchem100K.pkl".
     """
 
-    def __init__(self, trie_path: str):
+    def __init__(self, trie_path: Optional[str] = None):
+        if trie_path is None:
+            trie_path = _DEFAULT_TRIE_PATH
         with open(trie_path, "rb") as f:
             state: _State = _RestrictedTrieUnpickler(f).load()
         self.replace_root = state.replace_root
         self._reverse_map: Optional[Dict[str, List[str]]] = None
 
+        self.vocab: List[str] = []
+        self.vocab_dict: Dict[str, int] = {}
+        self.idx_to_token: Dict[int, str] = {}
+
+    def _get_token_index(self, token: str) -> int:
+        """Return this token's index, assigning it the next free index on first use."""
+        if token not in self.vocab_dict:
+            idx = len(self.vocab) + EMBEDDING_OFFSET
+            self.vocab.append(token)
+            self.vocab_dict[token] = idx
+            self.idx_to_token[idx] = token
+        return self.vocab_dict[token]
+
     def tokenize(self, smiles: str) -> List[str]:
         """Tokenize a SMILES string, replacing frequent token runs via the trie."""
         return compress(tokenize(smiles), self.replace_root)
+
+    def encode(self, smiles: str) -> List[int]:
+        """Tokenize and map to (dynamically assigned) vocabulary indices."""
+        return [self._get_token_index(tok) for tok in self.tokenize(smiles)]
+
+    def decode(self, token_ids: List[int]) -> str:
+        """Map indices back to tokens, expand replacements and reassemble the SMILES string."""
+        tokens = [self.idx_to_token.get(idx, UNKNOWN_TOKEN) for idx in token_ids]
+        return "".join(self.detokenize(tokens))
 
     def detokenize(self, tokens: List[str]) -> List[str]:
         """Expand replacement tokens (e.g. "<R0>") back into the original atom-level
