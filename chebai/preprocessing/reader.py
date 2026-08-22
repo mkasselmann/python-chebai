@@ -671,8 +671,12 @@ class TrieReader(TokenIndexerReader):
                 return None
 
         try:
+            # Resolve each "<R#>" replacement token back to the literal substring it
+            # stands for, so the token cache/tokens.txt stores real SMILES fragments
+            # instead of the artificial trie replacement tokens.
             tokenized = [
-                self._get_token_index(tok) for tok in self.tokenizer.tokenize(smiles)
+                self._get_token_index("".join(self.tokenizer.detokenize([tok])))
+                for tok in self.tokenizer.tokenize(smiles)
             ]
         except Exception as e:
             print(f"Could not tokenize SMILES: {smiles}")

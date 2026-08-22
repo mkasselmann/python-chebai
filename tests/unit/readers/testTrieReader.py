@@ -108,10 +108,12 @@ class TestTrieReader(unittest.TestCase):
 
     def test_read_data_adds_new_tokens(self) -> None:
         """New (replaced or raw) tokens are assigned increasing indices and cached."""
-        # canonical SMILES for ethane is "CC" -> replaced with the pretrained "<R0>" token
+        # canonical SMILES for ethane is "CC" -> replaced with the pretrained "<R0>" token,
+        # but the cache must store the resolved literal substring, not "<R0>" itself.
         result: List[int] = self.reader._read_data("CC")
         self.assertEqual(result, [EMBEDDING_OFFSET + 0])
-        self.assertIn("<R0>", self.reader.cache)
+        self.assertIn("CC", self.reader.cache)
+        self.assertNotIn("<R0>", self.reader.cache)
 
     def test_read_data_invalid_smiles_returns_none(self) -> None:
         """Invalid SMILES strings must not raise and instead return None."""
@@ -155,7 +157,8 @@ class TestTrieTTGReader(unittest.TestCase):
         """New (replaced or raw) tokens are assigned increasing indices and cached."""
         result: List[int] = self.reader._read_data("CC")
         self.assertEqual(result, [EMBEDDING_OFFSET + 0])
-        self.assertIn("<R0>", self.reader.cache)
+        self.assertIn("CC", self.reader.cache)
+        self.assertNotIn("<R0>", self.reader.cache)
 
     def test_read_data_invalid_smiles_returns_none(self) -> None:
         """Invalid SMILES strings must not raise and instead return None."""
@@ -202,7 +205,8 @@ class TestTrieTTGChEMBLReader(unittest.TestCase):
         """New (replaced or raw) tokens are assigned increasing indices and cached."""
         result: List[int] = self.reader._read_data("CC")
         self.assertEqual(result, [EMBEDDING_OFFSET + 0])
-        self.assertIn("<R0>", self.reader.cache)
+        self.assertIn("CC", self.reader.cache)
+        self.assertNotIn("<R0>", self.reader.cache)
 
     def test_read_data_invalid_smiles_returns_none(self) -> None:
         """Invalid SMILES strings must not raise and instead return None."""
