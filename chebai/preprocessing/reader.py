@@ -695,6 +695,16 @@ class TrieChEMBLReader(TrieReader):
         return "smiles_trie_chembl"
 
 
+class TrieChEBIReader(TrieReader):
+    DEFAULT_TRIE_SUBDIR = "trie_chebi"
+    DEFAULT_TRIE_FILENAME = "trie_chebi.pkl"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_trie_chebi"
+
+
 class TrieTTGReader(TrieReader):
     """
     Data reader using the TTG (Token Transition Graph) refined replacement trie
