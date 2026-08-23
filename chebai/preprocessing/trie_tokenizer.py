@@ -109,6 +109,8 @@ class _RestrictedTrieUnpickler(pickle.Unpickler):
     _ALLOWED = {
         ("trie_funcs", "_State"): _State,
         ("trie_funcs", "ReplaceTrie"): ReplaceTrie,
+        ("train.trie_funcs", "_State"): _State,
+        ("train.trie_funcs", "ReplaceTrie"): ReplaceTrie,
     }
 
     def find_class(self, module: str, name: str):

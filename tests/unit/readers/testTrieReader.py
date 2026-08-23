@@ -2,6 +2,7 @@ import os
 import pickle
 import sys
 import tempfile
+import types
 import unittest
 from typing import List
 from unittest.mock import mock_open, patch
@@ -29,26 +30,43 @@ def _insert_replace(root: ReplaceTrie, pattern, new_token: str) -> None:
     node.replacement = new_token
 
 
-def _pickle_as_trie_funcs(obj) -> bytes:
+def _pickle_as_trie_funcs(obj, module_name: str = "trie_funcs") -> bytes:
     """Pickle `obj` (and nested ReplaceTrie/_State instances) as if it came from
     a "trie_funcs" module, matching the original SMILES-Tokenization pickle layout."""
     orig_replace_trie_module = ReplaceTrie.__module__
     orig_state_module = _State.__module__
-    had_fake_module = "trie_funcs" in sys.modules
-    orig_fake_module = sys.modules.get("trie_funcs")
+    had_fake_module = module_name in sys.modules
+    orig_fake_module = sys.modules.get(module_name)
+    parent_name, _, child_name = module_name.rpartition(".")
+    had_parent_module = parent_name in sys.modules
+    parent_module = sys.modules.get(parent_name)
+    had_child = bool(parent_module and hasattr(parent_module, child_name))
+    orig_child = getattr(parent_module, child_name, None)
     try:
-        ReplaceTrie.__module__ = "trie_funcs"
-        _State.__module__ = "trie_funcs"
+        ReplaceTrie.__module__ = module_name
+        _State.__module__ = module_name
         # pickle verifies the class is importable from its recorded module.
-        sys.modules["trie_funcs"] = trie_tokenizer
+        if parent_name and parent_module is None:
+            parent_module = types.ModuleType(parent_name)
+            sys.modules[parent_name] = parent_module
+        sys.modules[module_name] = trie_tokenizer
+        if parent_module is not None:
+            setattr(parent_module, child_name, trie_tokenizer)
         return pickle.dumps(obj)
     finally:
         ReplaceTrie.__module__ = orig_replace_trie_module
         _State.__module__ = orig_state_module
         if had_fake_module:
-            sys.modules["trie_funcs"] = orig_fake_module
+            sys.modules[module_name] = orig_fake_module
         else:
-            del sys.modules["trie_funcs"]
+            del sys.modules[module_name]
+        if parent_module is not None and child_name:
+            if had_child:
+                setattr(parent_module, child_name, orig_child)
+            elif hasattr(parent_module, child_name):
+                delattr(parent_module, child_name)
+        if parent_name and not had_parent_module:
+            del sys.modules[parent_name]
 
 
 class TestTrieFunctions(unittest.TestCase):
@@ -118,6 +136,26 @@ class TestTrieReader(unittest.TestCase):
     def test_read_data_invalid_smiles_returns_none(self) -> None:
         """Invalid SMILES strings must not raise and instead return None."""
         self.assertIsNone(self.reader._read_data("not_a_smiles("))
+
+    def test_loads_train_trie_funcs_pickle(self) -> None:
+        """ChEBI trie artifacts serialize their classes as ``train.trie_funcs``."""
+        root = ReplaceTrie()
+        _insert_replace(root, ("C", "C"), "<R0>")
+        state = _State(token_to_idx={}, idx_to_token={}, replace_root=root)
+
+        trie_fd, trie_path = tempfile.mkstemp(suffix=".pkl")
+        try:
+            with os.fdopen(trie_fd, "wb") as f:
+                f.write(_pickle_as_trie_funcs(state, "train.trie_funcs"))
+            with patch(
+                "chebai.preprocessing.reader.open",
+                new_callable=mock_open,
+                read_data="",
+            ):
+                reader = TrieReader(token_path="/mock/path", trie_path=trie_path)
+            self.assertEqual(reader.tokenizer.tokenize("CC"), ["<R0>"])
+        finally:
+            os.remove(trie_path)
 
 
 class TestTrieTTGReader(unittest.TestCase):
