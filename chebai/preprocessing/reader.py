@@ -760,6 +760,33 @@ class TrieTTGChEMBLReader(TrieReader):
         return "smiles_ttg_chembl"
 
 
+class TrieTTGChEBIReader(TrieReader):
+    """
+    Data reader using the TTG-refined replacement trie trained on ChEBI, from the
+    SMILES-Tokenization project (https://github.com/BlastCoder/SMILES-Tokenization).
+
+    Structurally identical to `TrieReader`/`TrieTTGReader` (same pickled `_State`/
+    `ReplaceTrie` layout), only the underlying training corpus differs (ChEBI instead
+    of PubChem). Uses its own token cache, separate from the other Trie-based readers.
+
+    Args:
+        trie_path: Path to the pickled trie `_State`. Defaults to the bundled
+            "bin/ttg_chebi/ttg_chebi_K8_F4_H2p0.pkl".
+        canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
+        collator_kwargs: Optional dictionary of keyword arguments for the collator.
+        token_path: Optional path for the token file.
+        kwargs: Additional keyword arguments.
+    """
+
+    DEFAULT_TRIE_SUBDIR = "ttg_chebi"
+    DEFAULT_TRIE_FILENAME = "ttg_chebi_K8_F4_H2p0.pkl"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_ttg_chebi"
+
+
 class SelfiesReader(ChemDataReader):
     """
     Data reader for chemical data using SELFIES tokens.
