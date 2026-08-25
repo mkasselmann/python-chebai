@@ -40,6 +40,7 @@ class BCEWeighted(torch.nn.BCEWithLogitsLoss):
             f"Data extractor must be provided if this loss class ({self.__class__.__name__}) is used."
         )
 
+        self.data_extractor.use_latest_processed_run()
         assert all(
             os.path.exists(os.path.join(self.data_extractor.processed_dir, file_name))
             for file_name in self.data_extractor.processed_file_names

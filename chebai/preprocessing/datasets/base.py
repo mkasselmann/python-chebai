@@ -173,6 +173,34 @@ class XYBaseDataModule(LightningDataModule):
         """Name of the directory where the processed and tokenized data is stored."""
         return os.path.join(self.processed_dir_main, *self.identifier)
 
+    def use_latest_processed_run(self) -> bool:
+        """Use the newest completed run when this instance is a post-processing consumer."""
+        expected_files = [
+            os.path.join(self.processed_dir, file_name)
+            for file_name in self.processed_file_names
+        ]
+        if all(os.path.isfile(file_path) for file_path in expected_files):
+            return True
+
+        run_parent = Path(self.processed_dir_main).parent
+        run_dirs = [path for path in run_parent.glob("run_*") if path.is_dir()]
+        if not run_dirs:
+            return False
+
+        current_run = self._processed_run_dir
+        for run_dir in sorted(
+            run_dirs, key=lambda path: path.stat().st_mtime, reverse=True
+        ):
+            self._processed_run_dir = run_dir.name
+            if all(
+                os.path.isfile(os.path.join(self.processed_dir, file_name))
+                for file_name in self.processed_file_names
+            ):
+                return True
+
+        self._processed_run_dir = current_run
+        return False
+
     @property
     def raw_dir(self) -> str:
         """Name of the directory where the raw data is stored."""
@@ -1111,17 +1139,21 @@ class _DynamicDataset(XYBaseDataModule, ABC):
         df_data["ident"] = df_data["ident"].astype(str)
 
         if self.apply_id_filter:
-            print(f"Applying ID filter from {self.apply_id_filter}...")
-            with open(self.apply_id_filter, "r") as f:
+            id_filter_path = self._resolve_processed_file_path(self.apply_id_filter)
+            print(f"Applying ID filter from {id_filter_path}...")
+            with open(id_filter_path, "r") as f:
                 id_filter = [
                     line["ident"]
-                    for line in torch.load(self.apply_id_filter, weights_only=False)
+                    for line in torch.load(id_filter_path, weights_only=False)
                 ]
             df_data = df_data[df_data["ident"].isin(id_filter)]
 
         if self.apply_label_filter:
-            print(f"Applying label filter from {self.apply_label_filter}...")
-            with open(self.apply_label_filter, "r") as f:
+            label_filter_path = self._resolve_processed_file_path(
+                self.apply_label_filter
+            )
+            print(f"Applying label filter from {label_filter_path}...")
+            with open(label_filter_path, "r") as f:
                 label_filter = [line.strip() for line in f]
 
             with open(self.classes_txt_file_path, "r") as cf:
@@ -1140,6 +1172,19 @@ class _DynamicDataset(XYBaseDataModule, ABC):
         self._dynamic_df_train = df_data[df_data["ident"].isin(train_ids)]
         self._dynamic_df_val = df_data[df_data["ident"].isin(validation_ids)]
         self._dynamic_df_test = df_data[df_data["ident"].isin(test_ids)]
+
+    @staticmethod
+    def _resolve_processed_file_path(file_path: str) -> str:
+        """Resolve legacy processed paths to the newest run-specific file."""
+        path = Path(file_path)
+        if path.is_file():
+            return str(path)
+
+        run_files = sorted(path.parent.glob(f"run_*/{path.name}"), reverse=True)
+        if run_files:
+            return str(run_files[0])
+
+        raise FileNotFoundError(f"Processed file {file_path} does not exist")
 
     # ------------------------------ Phase: DataLoaders -----------------------------------
     def load_processed_data(

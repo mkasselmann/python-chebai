@@ -78,6 +78,7 @@ class ImplicationLoss(torch.nn.Module):
             data_extractor = data_extractor.labeled
         assert isinstance(data_extractor, _ChEBIDataExtractor)
         self.data_extractor = data_extractor
+        self.data_extractor.use_latest_processed_run()
         # propagate data_extractor to base loss
         if isinstance(base_loss, BCEWeighted):
             base_loss.data_extractor = self.data_extractor
