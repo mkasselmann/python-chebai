@@ -97,7 +97,9 @@ class PubChem(_DynamicDataset):
         Returns:
             str: Directory where data.pkl and splits.csv are stored (split-specific).
         """
-        return os.path.join(self.base_dir, "processed", self.split_label)
+        return os.path.join(
+            self.base_dir, "processed", self.split_label, self._processed_run_dir
+        )
 
     @property
     def raw_dir(self) -> str:

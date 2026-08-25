@@ -1,5 +1,6 @@
 import os
 import random
+from datetime import datetime
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Union
@@ -117,6 +118,7 @@ class XYBaseDataModule(LightningDataModule):
             )
         self.fold_index = fold_index
         self._base_dir = base_dir
+        self._processed_run_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S_%f")
         self.n_token_limit = n_token_limit
         os.makedirs(self.raw_dir, exist_ok=True)
         os.makedirs(self.processed_dir, exist_ok=True)
@@ -162,7 +164,7 @@ class XYBaseDataModule(LightningDataModule):
     @property
     def processed_dir_main(self) -> str:
         """Name of the directory where processed (but not tokenized) data is stored."""
-        return os.path.join(self.base_dir, "processed")
+        return os.path.join(self.base_dir, "processed", self._processed_run_dir)
 
     @property
     def processed_dir(self) -> str:
