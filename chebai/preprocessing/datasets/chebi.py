@@ -472,6 +472,7 @@ class _ChEBIDataExtractor(_DynamicDataset, ABC):
             self.base_dir,
             self._name if self.subset is None else f"{self._name}_{self.subset}",
             "processed",
+            self._processed_run_dir,
         )
 
     @property
@@ -1071,6 +1072,7 @@ class ChEBIOverXPartial(ChEBIOverX):
             self._name,
             f"partial_{self.top_class_id}_ext_ratio_{self.external_data_ratio:.2f}",
             "processed",
+            self._processed_run_dir,
         )
 
     def _graph_to_raw_dataset(self, g: "nx.DiGraph") -> pd.DataFrame:
