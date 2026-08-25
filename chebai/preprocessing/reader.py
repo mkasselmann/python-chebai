@@ -507,6 +507,16 @@ class SPEChEMBLReader(ChemSPEReader):
         return "smiles_spe_chembl"
 
 
+class SPEChEBIReader(ChemSPEReader):
+    DEFAULT_TRIE_SUBDIR = "spe_chebi"
+    DEFAULT_TRIE_FILENAME = "spe_chebi.txt"
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_spe_chebi"
+
+
 class ChemAPEReader(DataReader):
     """
     Data reader for chemical data using a pretrained Atom Pair Encoding (APE) tokenizer,

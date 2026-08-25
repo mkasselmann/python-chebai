@@ -26,6 +26,13 @@ on:
       - "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie_chebi/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg_chebi/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_5000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_5000_1000_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_10000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_10000_1000_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_20000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_20000_1000_0/tokens.txt"
   pull_request:
     paths:
       - "chebai/preprocessing/bin/smiles_token/tokens.txt"
@@ -44,6 +51,13 @@ on:
       - "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
       - "chebai/preprocessing/bin/smiles_trie_chebi/tokens.txt"
       - "chebai/preprocessing/bin/smiles_ttg_chebi/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_5000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_5000_1000_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_10000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_10000_1000_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_20000_500_0/tokens.txt"
+      - "chebai/preprocessing/bin/smiles_spe_chebi_20000_1000_0/tokens.txt"
 jobs:
   check_tokens:
     runs-on: ubuntu-latest
@@ -86,6 +100,13 @@ jobs:
             "chebai/preprocessing/bin/smiles_trie_chembl/tokens.txt"
             "chebai/preprocessing/bin/smiles_trie_chebi/tokens.txt"
             "chebai/preprocessing/bin/smiles_ttg_chebi/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_5000_500_0/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_5000_1000_0/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_10000_500_0/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_10000_1000_0/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_20000_500_0/tokens.txt"
+            "chebai/preprocessing/bin/smiles_spe_chebi_20000_1000_0/tokens.txt"
           )
           echo "TOKENS_FILES=${TOKENS_FILES[*]}" >> $GITHUB_ENV
 

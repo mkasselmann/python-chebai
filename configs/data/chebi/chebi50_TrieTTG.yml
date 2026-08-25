@@ -1,1 +1,4 @@
 class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieTTG
+reader_kwargs:
+  token_path: null
+  trie_path: null
