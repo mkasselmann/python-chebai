@@ -1,1 +1,65 @@
 class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_6_2/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_6_2.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_6_4/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_6_4.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_6_8/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_6_8.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_8_2/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_8_2.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_8_4/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_8_4.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_8_8/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_8_8.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_10_2/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_10_2.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_10_4/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_10_4.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_10_8/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_10_8.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_12_4/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_12_4.pkl"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_trie_chebi_12_8/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/trie_chebi_12_8.pkl"
