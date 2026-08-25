@@ -2,6 +2,7 @@ import os
 import random
 from datetime import datetime
 from abc import ABC, abstractmethod
+from uuid import uuid4
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional, Tuple, Union
 
@@ -118,7 +119,8 @@ class XYBaseDataModule(LightningDataModule):
             )
         self.fold_index = fold_index
         self._base_dir = base_dir
-        self._processed_run_dir = datetime.now().strftime("run_%Y%m%d_%H%M%S_%f")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self._processed_run_dir = f"run_{timestamp}_{uuid4().hex}"
         self.n_token_limit = n_token_limit
         os.makedirs(self.raw_dir, exist_ok=True)
         os.makedirs(self.processed_dir, exist_ok=True)

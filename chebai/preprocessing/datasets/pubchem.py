@@ -224,18 +224,17 @@ class PubChem(_DynamicDataset):
         pkl_path = os.path.join(
             self.processed_dir_main, self.processed_main_file_names_dict["data"]
         )
-        if not os.path.isfile(pkl_path):
-            os.makedirs(self.processed_dir_main, exist_ok=True)
-            print(f"Building data.pkl from {self._raw_data_source_path}...")
-            rows = []
-            with open(self._raw_data_source_path, "r") as f:
-                for line in tqdm.tqdm(f):
-                    line = line.rstrip("\n")
-                    if line:
-                        rows.append(self._parse_raw_line(line))
-            df = pd.DataFrame(rows, columns=["id", "smiles"])
-            pd.to_pickle(df, pkl_path)
-            print(f"Saved {len(df)} entries to {pkl_path}")
+        os.makedirs(self.processed_dir_main, exist_ok=True)
+        print(f"Building data.pkl from {self._raw_data_source_path}...")
+        rows = []
+        with open(self._raw_data_source_path, "r") as f:
+            for line in tqdm.tqdm(f):
+                line = line.rstrip("\n")
+                if line:
+                    rows.append(self._parse_raw_line(line))
+        df = pd.DataFrame(rows, columns=["id", "smiles"])
+        pd.to_pickle(df, pkl_path)
+        print(f"Saved {len(df)} entries to {pkl_path}")
 
     def _get_data_splits(self) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
