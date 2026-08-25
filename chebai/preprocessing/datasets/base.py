@@ -516,14 +516,8 @@ class XYBaseDataModule(LightningDataModule):
 
         rank_zero_info(f"Check for processed data in {self.processed_dir}")
         rank_zero_info(f"Cross-validation enabled: {self.use_inner_cross_validation}")
-        if any(
-            not os.path.isfile(os.path.join(self.processed_dir, f))
-            for f in self.processed_file_names
-        ):
-            rank_zero_info(
-                f"Did not find one of: {', '.join(self.processed_file_names)} in {self.processed_dir}"
-            )
-            self.setup_processed()
+        rank_zero_info(f"Preprocessing data into a new directory: {self.processed_dir}")
+        self.setup_processed()
 
         self._after_setup(**kwargs)
 
@@ -907,15 +901,14 @@ class _DynamicDataset(XYBaseDataModule, ABC):
         print("Checking for processed data in", self.processed_dir_main)
 
         processed_name = self.processed_main_file_names_dict["data"]
-        if not os.path.isfile(os.path.join(self.processed_dir_main, processed_name)):
-            print(f"Missing processed data file (`{processed_name}` file)")
-            os.makedirs(self.processed_dir_main, exist_ok=True)
-            data_path = self._download_required_data()
-            from chebi_utils import build_chebi_graph
+        print(f"Creating processed data file (`{processed_name}` file)")
+        os.makedirs(self.processed_dir_main, exist_ok=True)
+        data_path = self._download_required_data()
+        from chebi_utils import build_chebi_graph
 
-            g = build_chebi_graph(data_path)
-            data_df = self._graph_to_raw_dataset(g)
-            self.save_processed(data_df, processed_name)
+        g = build_chebi_graph(data_path)
+        data_df = self._graph_to_raw_dataset(g)
+        self.save_processed(data_df, processed_name)
 
     @abstractmethod
     def _download_required_data(self) -> str:
