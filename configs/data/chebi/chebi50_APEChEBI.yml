@@ -1,0 +1,35 @@
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_1000_400/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_1000_400"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_1000_800/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_1000_800"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_2000_800/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_2000_800"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_2000_400/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_2000_400"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_500_800/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_500_800"
+---
+class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APEChEBI
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_chebi_500_400/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_chebi_500_400"

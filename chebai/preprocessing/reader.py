@@ -603,6 +603,13 @@ class APEChEMBLReader(ChemAPEReader):
         return "smiles_ape_chembl"
 
 
+class APEChEBIReader(ChemAPEReader):
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_ape_chebi"
+
+
 class TrieReader(TokenIndexerReader):
     """
     Data reader for chemical data using a pretrained replacement-trie tokenizer,
