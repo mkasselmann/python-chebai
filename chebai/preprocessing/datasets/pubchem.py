@@ -615,6 +615,12 @@ class PubChemSPE(PubChem):
     READER: Type[dr.ChemSPEReader] = dr.ChemSPEReader
 
 
+class PubChemChar(PubChem):
+    """Subset of PubChem using the character-level CharReader."""
+
+    READER: Type[dr.CharReader] = dr.CharReader
+
+
 class PubChemAPE(PubChem):
     """
     Subset of PubChem using ChemAPEReader for data reading.

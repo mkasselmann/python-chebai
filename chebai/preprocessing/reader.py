@@ -878,6 +878,29 @@ class OrdReader(DataReader):
         return [ord(s) for s in raw_data]
 
 
+class CharReader(TokenIndexerReader):
+    """Character-level reader: every single character of the SMILES string is one token."""
+
+    COLLATOR = RaggedCollator
+
+    @classmethod
+    def name(cls) -> str:
+        """Returns the name of the data reader."""
+        return "smiles_char"
+
+    def _read_data(self, raw_data: str | Chem.Mol) -> Optional[List[int]]:
+        """Convert a SMILES string (or Chem.Mol) into a list of per-character token indices."""
+        if not isinstance(raw_data, str):
+            if raw_data is None:
+                return None
+            raw_data = Chem.MolToSmiles(raw_data)
+        return [self._get_token_index(c) for c in raw_data.strip()]
+
+    def _back_to_smiles(self, smiles_encoded: List[int]) -> str:
+        idx_to_token = {idx: tok for tok, idx in self.cache.items()}
+        return "".join(idx_to_token[t - EMBEDDING_OFFSET] for t in smiles_encoded)
+
+
 class FingerprintReader(DataReader):
     """
     Data reader for chemical data using RDKit fingerprints.

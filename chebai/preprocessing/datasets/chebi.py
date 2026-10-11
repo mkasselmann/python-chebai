@@ -658,6 +658,12 @@ class ChEBIOverXSPE(ChEBIOverX):
     READER: dr.ChemSPEReader = dr.ChemSPEReader
 
 
+class ChEBIOverXChar(ChEBIOverX):
+    """ChEBI dataset read with the character-level CharReader."""
+
+    READER: dr.CharReader = dr.CharReader
+
+
 class ChEBIOverXSPEChEMBL(ChEBIOverX):
     """
     A class for extracting data from the ChEBI dataset with the pretrained SPE reader on ChEMBL.
@@ -900,6 +906,18 @@ class ChEBIOver50SPE(ChEBIOverXSPE, ChEBIOver50):
 
     Inherits from ChEBIOverXSPE and ChEBIOver50.
     """
+
+    pass
+
+
+class ChEBIOver100Char(ChEBIOverXChar, ChEBIOver100):
+    """ChEBI dataset with the character-level reader and a threshold of 100."""
+
+    pass
+
+
+class ChEBIOver50Char(ChEBIOverXChar, ChEBIOver50):
+    """ChEBI dataset with the character-level reader and a threshold of 50."""
 
     pass
 
