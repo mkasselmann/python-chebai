@@ -1,1 +1,5 @@
 class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50APE
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ape_pubchem_8000_800/tokens.txt"
+    codes_path: "chebai/preprocessing/bin/ape_pubchem_8000_800"

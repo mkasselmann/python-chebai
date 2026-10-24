@@ -1,4 +1,5 @@
 class_path: chebai.preprocessing.datasets.chebi.ChEBIOver50TrieTTG
-reader_kwargs:
-  token_path: null
-  trie_path: null
+init_args:
+  reader_kwargs:
+    token_path: "chebai/preprocessing/bin/smiles_ttg_pubchem_K8_F4_H2p0/tokens.txt"
+    trie_path: "chebai/preprocessing/bin/ttg_pubchem_K8_F4_H2p0.pkl"
