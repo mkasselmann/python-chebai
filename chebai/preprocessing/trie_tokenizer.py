@@ -1,18 +1,3 @@
-"""
-Loader/inference code for the trie-based SMILES compressor from the
-SMILES-Tokenization project (https://github.com/BlastCoder/SMILES-Tokenization).
-
-The pretrained trie is a pickled `_State` namedtuple (produced by
-`train/train_trie.py::save_state`) holding a `ReplaceTrie` built from frequent
-token n-grams (Algorithms 3-7 in the accompanying paper). This module re-implements
-just enough of the original `trie_funcs.py` (same regex, same node/trie layout) to:
-  1. Safely unpickle the bundled ``trie_pubchem100K.pkl`` (via an allow-listed
-     `pickle.Unpickler` that only reconstructs `_State`/`ReplaceTrie`, since the
-     file was pickled under the module name "trie_funcs" which doesn't exist here).
-  2. Tokenize new SMILES with the same greedy longest-match compression used at
-     training time.
-"""
-
 from __future__ import annotations
 
 import collections
