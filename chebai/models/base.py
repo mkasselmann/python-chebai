@@ -1,4 +1,5 @@
 import logging
+import os
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Optional, Union
 
@@ -96,6 +97,20 @@ class ChebaiBaseNet(LightningModule, ABC):
         if self.classes_txt_file_path is not None:
             # https://lightning.ai/docs/pytorch/stable/common/checkpointing_intermediate.html#modify-a-checkpoint-anywhere
             checkpoint["classification_labels"] = self.labels_list
+        from chebai.preprocessing.datasets.base import _DynamicDataset
+
+        datamodule = self._trainer.datamodule if self._trainer is not None else None
+        if isinstance(datamodule, _DynamicDataset):
+            run_dir = os.path.abspath(datamodule.processed_dir_main)
+            splits_path = datamodule.splits_file_path or os.path.join(
+                run_dir, "splits.csv"
+            )
+            checkpoint["evaluation_data"] = {
+                "processed_run_dir": run_dir,
+                "splits_file_path": os.path.abspath(splits_path),
+                "splits_in_run": os.path.abspath(splits_path)
+                == os.path.join(run_dir, "splits.csv"),
+            }
 
     def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
         # avoid errors due to unexpected keys (e.g., if loading checkpoint from a bce model and using it with a

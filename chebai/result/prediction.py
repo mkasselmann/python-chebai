@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Optional
 
 import pandas as pd
@@ -5,9 +6,10 @@ import torch
 from jsonargparse import CLI
 from lightning.fabric.utilities.types import _PATH
 from lightning.pytorch.cli import instantiate_module
+from torch.utils.data import DataLoader
 
 from chebai.models.base import ChebaiBaseNet
-from chebai.preprocessing.datasets.base import XYBaseDataModule
+from chebai.preprocessing.datasets.base import XYBaseDataModule, _DynamicDataset
 
 
 class Predictor:
@@ -16,7 +18,7 @@ class Predictor:
         checkpoint_path: _PATH,
         batch_size: Optional[int] = None,
         compile_model: bool = True,
-    ):
+    ) -> None:
         """Initializes the Predictor with a model loaded from the checkpoint.
 
         Args:
@@ -43,7 +45,8 @@ class Predictor:
         print(f"For Loaded checkpoint from: {checkpoint_path}")
         print("Below are the modules loaded from the checkpoint:")
 
-        self._dm_hparams = ckpt_file["datamodule_hyper_parameters"]
+        self._evaluation_data = ckpt_file.get("evaluation_data")
+        self._dm_hparams = dict(ckpt_file["datamodule_hyper_parameters"])
         self._dm_hparams.pop("splits_file_path", None)
         self._dm_hparams.pop("augment_smiles", None)
         self._dm_hparams.pop("aug_smiles_variations", None)
@@ -101,6 +104,118 @@ class Predictor:
             self._model = torch.compile(self._model)  # type: ignore
         self._model.eval()
         print("-" * 50)
+
+    def evaluation_dataloader(
+        self,
+        partition: str = "test",
+        processed_run_dir: Optional[_PATH] = None,
+        splits_file_path: Optional[_PATH] = None,
+    ) -> DataLoader:
+        """Load the original dynamic split from a training run.
+
+        For older checkpoints, or after moving data, provide the directory containing
+        the run's classes.txt, splits.csv, and reader-specific data.pt. If training
+        used an external splits CSV, provide that file separately.
+        """
+        if partition not in ("test", "validation", "train"):
+            raise ValueError(f"Unknown evaluation partition: {partition}")
+        if not isinstance(self._dm, _DynamicDataset):
+            raise TypeError("Evaluation of saved runs requires a dynamic dataset.")
+
+        metadata = self._evaluation_data or {}
+        saved_run = metadata.get("processed_run_dir")
+        run = processed_run_dir if processed_run_dir is not None else saved_run
+        if run is None:
+            raise ValueError(
+                "This checkpoint does not record its processed training run. "
+                "Provide processed_run_dir pointing to the original run directory."
+            )
+        run_dir = Path(run).resolve()
+        if not run_dir.is_dir():
+            raise FileNotFoundError(
+                f"Processed training run not found: {run_dir}. "
+                "Copy the original run directory or provide processed_run_dir."
+            )
+
+        saved_splits = metadata.get("splits_file_path")
+        if splits_file_path is not None:
+            split_path = Path(splits_file_path)
+        elif processed_run_dir is None and saved_splits:
+            split_path = Path(saved_splits)
+        elif saved_splits and not metadata.get("splits_in_run", False):
+            raise ValueError(
+                "Training used an external splits file. Provide splits_file_path "
+                "for the original splits CSV."
+            )
+        else:
+            split_path = run_dir / "splits.csv"
+        split_path = split_path.resolve()
+        validated_splits = self._dm._validate_splits_file_path(str(split_path))
+
+        # An absolute run directory overrides the normal base directory in os.path.join.
+        previous_run = self._dm._processed_run_dir
+        self._dm._processed_run_dir = str(run_dir)
+        try:
+            data_path = (
+                Path(self._dm.processed_dir)
+                / self._dm.processed_file_names_dict["data"]
+            )
+            if not data_path.is_file():
+                raise FileNotFoundError(
+                    f"Processed data not found: {data_path}. Use the original run "
+                    "and the same reader/tokenizer as training."
+                )
+            if hasattr(self._dm, "classes_txt_file_path"):
+                classes_path = Path(self._dm.classes_txt_file_path)
+                if not classes_path.is_file():
+                    raise FileNotFoundError(
+                        f"Training classes not found: {classes_path}"
+                    )
+                with classes_path.open() as classes_file:
+                    classes = [line.strip() for line in classes_file]
+                if classes != self._classification_labels:
+                    raise ValueError(
+                        f"Class labels in {classes_path} do not match the checkpoint."
+                    )
+        except (OSError, ValueError):
+            self._dm._processed_run_dir = previous_run
+            raise
+
+        self._dm.splits_file_path = validated_splits
+        self._dm._dynamic_df_train = None
+        self._dm._dynamic_df_val = None
+        self._dm._dynamic_df_test = None
+        loader = self._dm.dataloader(partition, shuffle=False)
+        split_df = pd.read_csv(split_path, dtype={"id": str})
+        expected_ids = set(split_df.loc[split_df["split"] == partition, "id"])
+        actual_ids = {str(row["ident"]) for row in loader.dataset}
+        missing_ids = expected_ids - actual_ids
+        if missing_ids:
+            raise ValueError(
+                f"{len(missing_ids)} {partition} IDs from {split_path} are missing "
+                "from the loaded data. Check that the run and split match."
+            )
+        if not actual_ids:
+            raise ValueError(f"The {partition} split is empty in {split_path}.")
+        return loader
+
+    @torch.inference_mode()
+    def evaluate_predictions(
+        self,
+        partition: str = "test",
+        processed_run_dir: Optional[_PATH] = None,
+        splits_file_path: Optional[_PATH] = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return predictions and labels on CPU for the original training split."""
+        loader = self.evaluation_dataloader(
+            partition, processed_run_dir, splits_file_path
+        )
+        predictions, labels = [], []
+        for batch_idx, batch in enumerate(loader):
+            result = self._model.predict_step(batch, batch_idx)
+            predictions.append(result["preds"].cpu())
+            labels.append(result["labels"].cpu())
+        return torch.cat(predictions), torch.cat(labels)
 
     def predict_from_file(
         self,
