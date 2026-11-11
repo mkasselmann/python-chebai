@@ -57,9 +57,7 @@ def load_predictor(checkpoint_path: str) -> Predictor:
     logger.info(f"Loading predictor from: {checkpoint_path}")
     predictor = Predictor(checkpoint_path=checkpoint_path, compile_model=False)
     logger.info(f"Loaded datamodule: {type(predictor._dm).__name__}")
-    logger.info(
-        f"Input dim: {predictor._dm.input_dim}, Output dim: {predictor._dm.output_dim}"
-    )
+    logger.info(f"Loaded model: {type(predictor._model).__name__}")
     return predictor
 
 
