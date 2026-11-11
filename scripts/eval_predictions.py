@@ -32,7 +32,7 @@ PROCESSED_DIR = "data/chebi_v244/ChEBI50/processed/run_20261111_021403_48716b98e
 OUTPUT_DIR = "results"  # e.g., "/scratch/user/results"
 
 # Save results to disk (set to False to only print metrics)
-SAVE_RESULTS = True
+SHOULD_SAVE_RESULTS = True
 
 # ============================================================
 # END CONFIGURATION
@@ -216,7 +216,7 @@ def main():
     project_dir = PROJECT_DIR
     processed_dir = PROCESSED_DIR
     output_dir = OUTPUT_DIR
-    save_results = SAVE_RESULTS
+    should_save = SHOULD_SAVE_RESULTS
 
     # Parse command line arguments (these override config if provided)
     parser = argparse.ArgumentParser(
@@ -279,7 +279,7 @@ Examples:
     if args.output_dir:
         output_dir = args.output_dir
     if args.no_save:
-        save_results = False
+        should_save = False
 
     # Validate checkpoint is provided
     if not checkpoint:
@@ -312,7 +312,7 @@ Examples:
     metrics = compute_metrics(preds, labels)
 
     # Save results
-    if save_results:
+    if should_save:
         save_results(preds, labels, metrics, output_dir)
     else:
         logger.info("\n" + "=" * 60)
