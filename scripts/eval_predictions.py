@@ -61,12 +61,36 @@ def load_predictor(checkpoint_path: str) -> Predictor:
     return predictor
 
 
-def evaluate_predictions(predictor: Predictor) -> tuple:
+def evaluate_predictions(predictor: Predictor, processed_dir: str = None) -> tuple:
     """
     Cell 5: Predict the whole test set.
     Returns predictions and labels as tensors.
+
+    If processed_dir is provided, it will use that directory for data loading.
+    Otherwise, it uses the datamodule's default behavior (which may regenerate data).
     """
     logger.info("Starting evaluation of test set...")
+
+    # If processed_dir is specified, use predictor's evaluate_predictions method
+    if processed_dir:
+        logger.info(f"Using processed directory: {processed_dir}")
+
+        # Verify the directory exists
+        processed_path = Path(processed_dir)
+        if not processed_path.exists():
+            logger.error(f"Processed directory not found: {processed_dir}")
+            logger.error("Please check that PROCESSED_DIR in the config is correct.")
+            raise FileNotFoundError(f"Processed directory not found: {processed_dir}")
+
+        logger.info(f"✓ Processed directory found")
+
+        preds, labels = predictor.evaluate_predictions(
+            partition="test",
+            processed_run_dir=processed_dir,
+            splits_file_path=None,
+        )
+        return preds, labels
+
     test_dl = predictor._dm.test_dataloader()
 
     preds = []
@@ -282,7 +306,7 @@ Examples:
     predictor = load_predictor(checkpoint)
 
     # Cell 5: Evaluate predictions
-    preds, labels = evaluate_predictions(predictor)
+    preds, labels = evaluate_predictions(predictor, processed_dir=processed_dir)
 
     # Cell 6: Compute metrics
     metrics = compute_metrics(preds, labels)
