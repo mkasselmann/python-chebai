@@ -20,13 +20,13 @@ from chebai.result.prediction import Predictor
 # ============================================================
 
 # Path to model checkpoint (REQUIRED)
-CHECKPOINT_PATH = "/logs/wandb/run-20261111_021924-pst7wzsa/files/checkpoints/best_micro_f1_epoch=151_val_loss=0.0110_val_macro-f1=0.6575_val_micro-f1=0.8969.ckpt"  # e.g., "/scratch/user/run-123/checkpoint.ckpt"
+CHECKPOINT_PATH = "logs/wandb/run-20261111_021924-pst7wzsa/files/checkpoints/best_micro_f1_epoch=151_val_loss=0.0110_val_macro-f1=0.6575_val_micro-f1=0.8969.ckpt"  # e.g., "/scratch/user/run-123/checkpoint.ckpt"
 
 # Project directory (optional, auto-detected if None)
 PROJECT_DIR = None  # e.g., "/home/user/python-chebai"
 
 # Path to processed run directory with splits.csv (optional)
-PROCESSED_DIR = "/data/chebi_v244/ChEBI50/processed/run_20261111_021403_48716b98e8e443889ca11bac75d0cc80"  # e.g., "/data/processed/run-456"
+PROCESSED_DIR = "data/chebi_v244/ChEBI50/processed/run_20261111_021403_48716b98e8e443889ca11bac75d0cc80"  # e.g., "/data/processed/run-456"
 
 # Output directory for results
 OUTPUT_DIR = "results"  # e.g., "/scratch/user/results"
