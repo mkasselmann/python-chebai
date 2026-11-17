@@ -1,8 +1,13 @@
+import os
 import unittest
 from typing import List
 from unittest.mock import mock_open, patch
 
-from chebai.preprocessing.reader import ChemAPEReader
+from chebai.preprocessing.reader import (
+    APEChEBIReader,
+    APEChEMBLReader,
+    ChemAPEReader,
+)
 from chebai.preprocessing.smiles_tokenizer import APETokenizer
 
 
@@ -70,6 +75,29 @@ class TestChemAPEReader(unittest.TestCase):
         initial_vocab_size = len(self.reader.tokenizer.vocabulary)
         self.reader._read_data("CC(=O)O")
         self.assertEqual(len(self.reader.tokenizer.vocabulary), initial_vocab_size)
+
+    def test_dataset_readers_use_their_own_default_vocabularies(self) -> None:
+        readers = (
+            (ChemAPEReader, "ape_pubchem100K"),
+            (APEChEMBLReader, "ape_chembl_8000_800"),
+            (APEChEBIReader, "ape_chebi_8000_800"),
+        )
+        for reader_type, subdir in readers:
+            with self.subTest(reader=reader_type.__name__):
+                with patch(
+                    "chebai.preprocessing.smiles_tokenizer.APETokenizer"
+                ) as tokenizer:
+                    reader = reader_type()
+
+                tokenizer.assert_called_once_with(
+                    os.path.join(reader.dirname, "bin", subdir, "vocab.json")
+                )
+
+    def test_explicit_data_path_overrides_reader_default(self) -> None:
+        with patch("chebai.preprocessing.smiles_tokenizer.APETokenizer") as tokenizer:
+            ChemAPEReader(data_path="/custom/ape")
+
+        tokenizer.assert_called_once_with(os.path.join("/custom/ape", "vocab.json"))
 
 
 if __name__ == "__main__":

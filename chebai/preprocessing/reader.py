@@ -528,7 +528,7 @@ class ChemAPEReader(DataReader):
 
     Args:
         data_path: Path to a directory holding a pretrained APE tokenizer, i.e. a
-            "vocab.json" file. Defaults to the bundled tokenizer under "bin/ape_pubchem100K".
+            "vocab.json" file. Defaults to the bundled tokenizer for this reader.
         canonicalize_smiles: Whether to canonicalize SMILES using RDKit before tokenizing.
         collator_kwargs: Optional dictionary of keyword arguments for the collator.
         token_path: Optional path for the token file.
@@ -536,6 +536,7 @@ class ChemAPEReader(DataReader):
     """
 
     COLLATOR = RaggedCollator
+    DEFAULT_APE_SUBDIR = "ape_pubchem100K"
 
     @classmethod
     def name(cls) -> str:
@@ -553,7 +554,7 @@ class ChemAPEReader(DataReader):
 
         super().__init__(*args, **kwargs)
         if data_path is None:
-            data_path = os.path.join(self.dirname, "bin", "ape_pubchem100K")
+            data_path = os.path.join(self.dirname, "bin", self.DEFAULT_APE_SUBDIR)
         self.tokenizer = APETokenizer(os.path.join(data_path, "vocab.json"))
         self.canonicalize_smiles = canonicalize_smiles
 
@@ -597,6 +598,8 @@ class ChemAPEReader(DataReader):
 
 
 class APEChEMBLReader(ChemAPEReader):
+    DEFAULT_APE_SUBDIR = "ape_chembl_8000_800"
+
     @classmethod
     def name(cls) -> str:
         """Returns the name of the data reader."""
@@ -604,6 +607,8 @@ class APEChEMBLReader(ChemAPEReader):
 
 
 class APEChEBIReader(ChemAPEReader):
+    DEFAULT_APE_SUBDIR = "ape_chebi_8000_800"
+
     @classmethod
     def name(cls) -> str:
         """Returns the name of the data reader."""
