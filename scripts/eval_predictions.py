@@ -20,18 +20,18 @@ from chebai.result.prediction import Predictor
 # ============================================================
 
 # Path to model checkpoint (REQUIRED)
-CHECKPOINT_PATH = "D:\\ba\\neu\\123\\ttg_chembl\\files\\checkpoints\\best_micro_f1_epoch=154_val_loss=0.0126_val_macro-f1=0.6325_val_micro-f1=0.8875.ckpt"  # e.g., "/scratch/user/run-123/checkpoint.ckpt"
+CHECKPOINT_PATH = "D:\\ba\\neu\\seed_99\\ape_chebi\\files\\checkpoints\\best_micro_f1_epoch=184_val_loss=0.0126_val_macro-f1=0.6465_val_micro-f1=0.8909.ckpt"  # e.g., "/scratch/user/run-123/checkpoint.ckpt"
 
 # Project directory (optional, auto-detected if None)
 PROJECT_DIR = None  # e.g., "/home/user/python-chebai"
 
 # Path to processed run directory with splits.csv (optional)
 PROCESSED_DIR = (
-    "D:\\ba\\neu\\123\\processed\\ttg_chembl"  # e.g., "/data/processed/run-456"
+    "D:\\ba\\neu\\seed_99\\processed\\ape_chebi"  # e.g., "/data/processed/run-456"
 )
 
 # Output directory for results
-OUTPUT_DIR = "D:\\ba\\neu\\123\\results_ttg_chembl"  # e.g., "/scratch/user/results"
+OUTPUT_DIR = "D:\\ba\\neu\\seed_99\\results_ape_chebi"  # e.g., "/scratch/user/results"
 
 # Save results to disk (set to False to only print metrics)
 SHOULD_SAVE_RESULTS = True
